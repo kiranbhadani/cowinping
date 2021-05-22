@@ -1,3 +1,3 @@
-# CoWinPing - A console app to alert when CoWIN vaccination slot available
+# CoWin Ping
 
-.Net core console app to check the available slots for Covid-19 Vaccination Centers from CoWIN API in India. This CANNOT book slots automatically
+.Net core console app to get alert when there is a vaccination slot available from CoWIN API. This CANNOT book slots automatically
