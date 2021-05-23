@@ -14,6 +14,8 @@ namespace CoWinPing
 
         static async Task Main(string[] args)
         {
+            Console.WriteLine("CoWin Ping");
+            Console.WriteLine("------------------------------");
             Console.Write("Enter pincode to watch:");
             var pinConde = Console.ReadLine();
             while (!Regex.IsMatch(pinConde, pinCodeRegEx))
@@ -44,13 +46,15 @@ namespace CoWinPing
             var url = apiUrl + $"?pincode={pinConde}&date={DateTime.Today.ToString("dd-MM-yyyy")}";
             var httpClient = new HttpClient();
             Console.WriteLine($"Started... looking slots for {pinConde}. Keep your speakers on to get alert.");
-            Console.WriteLine($"Press ESC to stop");
+            Console.WriteLine($"Press ESC to stop. It will auto stop after 1 hour.");
 
             var doesStr = $"available_capacity_dose{dose.KeyChar}";
+            var totalSec = 0;
+            var runForSec = 60 * 60;
 
             do
             {
-                while (!Console.KeyAvailable)
+                while (!Console.KeyAvailable && totalSec <= runForSec)
                 {
                     var response = await httpClient.GetAsync(url);
                     if (response.IsSuccessStatusCode)
@@ -72,8 +76,17 @@ namespace CoWinPing
                     }
 
                     await Task.Delay(5000);
+                    totalSec += 5;
+                }
+
+                if (totalSec > runForSec)
+                {
+                    break;
                 }
             } while (Console.ReadKey(true).Key != ConsoleKey.Escape);
+
+            Console.WriteLine($"Stopped...");
+            Environment.Exit(0);
         }
     }
 }

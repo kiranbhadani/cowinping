@@ -6,6 +6,11 @@
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<PublishTrimmed>true</PublishTrimmed>
 		<TrimMode>CopyUsed</TrimMode>
+		<SignAssembly>true</SignAssembly>
+		<Authors>Kiran Bhadani</Authors>
+		<PackageProjectUrl>https://github.com/kiranbhadani/cowinping</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/kiranbhadani/cowinping</RepositoryUrl>
+		<AssemblyOriginatorKeyFile>SelfSign.pfx</AssemblyOriginatorKeyFile>
 	</PropertyGroup>
 
 	<ItemGroup>
