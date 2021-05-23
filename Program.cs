@@ -85,7 +85,8 @@ namespace CoWinPing
                 }
             } while (Console.ReadKey(true).Key != ConsoleKey.Escape);
 
-            Console.WriteLine($"Stopped...");
+            Console.WriteLine($"Stopped... Press any key to exit");
+            Console.ReadKey();
             Environment.Exit(0);
         }
     }
