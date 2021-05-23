@@ -2,6 +2,7 @@
 using System;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace CoWinPing
@@ -9,15 +10,42 @@ namespace CoWinPing
     class Program
     {
         const string apiUrl = "https://cdn-api.co-vin.in/api/v2/appointment/sessions/calendarByPin";
-        
+        const string pinCodeRegEx = "^[1-9][0-9]{5}$";
+
         static async Task Main(string[] args)
         {
             Console.Write("Enter pincode to watch:");
             var pinConde = Console.ReadLine();
+            while (!Regex.IsMatch(pinConde, pinCodeRegEx))
+            {
+                Console.WriteLine("Please enter valid pincode, 6 digit number");
+                pinConde = Console.ReadLine();
+            }
+
+            int ageNum;
+            Console.Write("Enter age:");
+            var age = Console.ReadLine();
+            while (!int.TryParse(age, out ageNum) || !(ageNum > 1 && ageNum <= 150))
+            {
+                Console.WriteLine("Please enter valid age, numbers of years only");
+                age = Console.ReadLine();
+            }
+
+            Console.Write("Dose 1/2:");
+            var dose = Console.ReadKey();
+            while (dose.Key != ConsoleKey.D1 && dose.Key != ConsoleKey.D2)
+            {
+                Console.WriteLine();
+                Console.Write("Press number 1 or 2:");
+                dose = Console.ReadKey();
+            }
+            Console.WriteLine();
 
             var url = apiUrl + $"?pincode={pinConde}&date={DateTime.Today.ToString("dd-MM-yyyy")}";
             var httpClient = new HttpClient();
-            Console.WriteLine("Press ESC to stop");
+            Console.WriteLine($"Started... looking slots for {pinConde}. Press ESC to stop");
+            var doesStr = $"available_capacity_dose{dose.KeyChar}";
+
             do
             {
                 while (!Console.KeyAvailable)
@@ -28,12 +56,16 @@ namespace CoWinPing
                         var content = await response.Content.ReadAsStringAsync();
                         var json = JObject.Parse(content);
 
-                        var availabeSlot = json.SelectTokens("$.centers[*].sessions[?(@.available_capacity_dose1 > 0)]");
-                        if (availabeSlot != null && availabeSlot.Count() > 0)
+                        var centers = json.SelectToken("$.centers");
+                        foreach (var center in centers.Children())
                         {
-                            Console.WriteLine("Hurry! slots availabe!");
-                            Console.Beep();
-                            //break;
+                            var availabeSlot = center.SelectTokens($"$.sessions[?(@.{doesStr}>0 && @.min_age_limit<={ageNum})]");
+                            if (availabeSlot != null && availabeSlot.Count() > 0)
+                            {
+                                Console.WriteLine($"Hurry! {availabeSlot.First().Value<string>(doesStr)} slots available at {center.Value<string>("name")}");
+                                Console.Beep();
+                                //break;
+                            }
                         }
                     }
 
