@@ -43,7 +43,9 @@ namespace CoWinPing
 
             var url = apiUrl + $"?pincode={pinConde}&date={DateTime.Today.ToString("dd-MM-yyyy")}";
             var httpClient = new HttpClient();
-            Console.WriteLine($"Started... looking slots for {pinConde}. Press ESC to stop");
+            Console.WriteLine($"Started... looking slots for {pinConde}. Keep your speakers on to get alert.");
+            Console.WriteLine($"Press ESC to stop");
+
             var doesStr = $"available_capacity_dose{dose.KeyChar}";
 
             do
