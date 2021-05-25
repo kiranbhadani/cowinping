@@ -50,40 +50,53 @@ namespace CoWinPing
 
             var doesStr = $"available_capacity_dose{dose.KeyChar}";
             var totalSec = 0;
-            var runForSec = 60 * 60;
+            var runForSec = 60 * 60 * 3; // 3hrs
+            var errCount = 0;
 
             do
             {
                 while (!Console.KeyAvailable && totalSec <= runForSec)
                 {
-                    var response = await httpClient.GetAsync(url);
-                    if (response.IsSuccessStatusCode)
+                    try
                     {
-                        var content = await response.Content.ReadAsStringAsync();
-                        var json = JObject.Parse(content);
-
-                        var centers = json.SelectToken("$.centers");
-                        foreach (var center in centers.Children())
+                        var response = await httpClient.GetAsync(url);
+                        if (response.IsSuccessStatusCode)
                         {
-                            var availabeSlot = center.SelectTokens($"$.sessions[?(@.{doesStr}>0 && @.min_age_limit<={ageNum})]");
-                            if (availabeSlot != null && availabeSlot.Count() > 0)
+                            var content = await response.Content.ReadAsStringAsync();
+                            var json = JObject.Parse(content);
+
+                            var centers = json.SelectToken("$.centers");
+                            foreach (var center in centers.Children())
                             {
-                                Console.WriteLine($"Hurry! {availabeSlot.First().Value<string>(doesStr)} slots available at {center.Value<string>("name")}");
-                                Console.Beep();
-                                //break;
+                                var availabeSlot = center.SelectTokens($"$.sessions[?(@.{doesStr}>0 && @.min_age_limit<={ageNum})]");
+                                if (availabeSlot != null && availabeSlot.Count() > 0)
+                                {
+                                    Console.WriteLine($"Hurry! {availabeSlot.First().Value<string>(doesStr)} slots available at {center.Value<string>("name")}");
+                                    Console.Beep();
+                                    //break;
+                                }
                             }
                         }
                     }
-
+                    catch
+                    {
+                        errCount++;
+                        if (errCount >= 3)
+                        {
+                            Console.WriteLine($"Something went wrong... please try again.");
+                            break;
+                        }
+                    }
                     await Task.Delay(5000);
                     totalSec += 5;
                 }
 
-                if (totalSec > runForSec)
+                if (totalSec > runForSec || errCount >= 3)
                 {
                     break;
                 }
             } while (Console.ReadKey(true).Key != ConsoleKey.Escape);
+
 
             Console.WriteLine($"Stopped... Press any key to exit");
             Console.ReadKey();
